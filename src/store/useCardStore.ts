@@ -64,7 +64,7 @@ const debouncedSaveCurrent = (card: CardData) => {
 export const useCardStore = create<CardStoreState>((set, get) => ({
   card: DEFAULT_CARD,
   savedCards: [],
-  isLoaded: false,
+  isLoaded: true,
   calibration: false,
   previewScale: 0.42,
 

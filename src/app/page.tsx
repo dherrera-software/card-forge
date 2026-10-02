@@ -43,18 +43,7 @@ export default function HomePage() {
     }
   }, [setPreviewScale]);
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0d14] text-[#f0e6cf]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
-          <span className="font-serif text-sm tracking-wider text-amber-200/80">
-            Cargando Card Forge...
-          </span>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0a0d14] text-[#f0e6cf]">
