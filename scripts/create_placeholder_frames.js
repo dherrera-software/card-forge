@@ -121,12 +121,12 @@ function drawFrame(type) {
       drawRect(3.8, 2.1, 12.9, 8.6, 240, 195, 60, 255, 5);
     }
 
-    // Effect slot
-    drawRect(7.6, 83.0, 85.0, 12.7, 212, 175, 55, 255, 4);
+    // Effect slot (wider)
+    drawRect(5.2, 82.5, 89.6, 13.5, 212, 175, 55, 255, 4);
 
-    // ATK / DEF badge for monster
+    // ATK / DEF badge for monster (compact for 1-2 digit stats)
     if (type === 'monster') {
-      drawRect(67.4, 92.3, 23.4, 2.9, 255, 215, 0, 255, 3);
+      drawRect(75.5, 91.8, 18.5, 3.6, 255, 215, 0, 255, 3);
     }
   });
 }

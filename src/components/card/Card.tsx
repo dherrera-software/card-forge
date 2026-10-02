@@ -1,7 +1,6 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import Image from "next/image";
 import { CardData, CardTemplate } from "@/lib/schema";
 import { CARD_TEMPLATES } from "@/lib/templates";
 import { CardSlot } from "./CardSlot";
@@ -106,8 +105,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           <AutoFitText
             text={card.name || "NOMBRE DE LA CARTA"}
             singleLine
-            minFontSize={20}
-            maxFontSize={50}
+            minFontSize={18}
+            maxFontSize={48}
             className="font-[family-name:var(--font-cinzel)] font-bold tracking-wider text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] text-[#f0e6cf]"
           />
         </CardSlot>
@@ -126,40 +125,42 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           </CardSlot>
         )}
 
-        {/* Effect Slot */}
+        {/* Effect Slot — padding mínimo para aprovechar todo el ancho */}
         <CardSlot
           rect={slots.effect}
           calibration={calibration}
           label="Effect"
-          className="z-30 px-6 py-4 flex flex-col justify-start"
+          className="z-30 px-3 py-2 flex flex-col justify-start"
         >
-          <div className="relative w-full h-full flex flex-col justify-between">
+          <div
+            className={`relative w-full h-full flex flex-col justify-center overflow-hidden ${
+              isMonster ? "pb-10" : "pb-0"
+            }`}
+          >
             <AutoFitText
               text={card.effect || "Efecto o descripción de la carta..."}
-              minFontSize={18}
-              maxFontSize={34}
-              className={`font-[family-name:var(--font-lora)] text-[#f0e6cf] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] ${
-                isMonster ? "pb-9" : ""
-              }`}
+              minFontSize={10}
+              maxFontSize={32}
+              className="font-[family-name:var(--font-lora)] text-[#f0e6cf] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
             />
           </div>
         </CardSlot>
 
-        {/* ATK / DEF Slot (Monster only) */}
+        {/* ATK / DEF — tamaño de fuente que llena exactamente el slot */}
         {showAtkDef && slots.atkdef && (
           <CardSlot
             rect={slots.atkdef}
             calibration={calibration}
             label="ATK / DEF"
-            className="z-40 flex items-center justify-end font-[family-name:var(--font-cinzel)] font-black text-2xl tracking-wider text-[#f5ebd7] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] px-3"
+            className="z-40 flex items-center justify-end pr-2 overflow-hidden"
           >
-            <div className="flex items-center space-x-3 bg-black/60 px-3 py-1 rounded border border-amber-500/40">
-              <span className="text-amber-400 text-lg">ATK</span>
-              <span>{card.atk || "0"}</span>
-              <span className="text-zinc-500">/</span>
-              <span className="text-blue-400 text-lg">DEF</span>
-              <span>{card.def || "0"}</span>
-            </div>
+            <AutoFitText
+              text={`ATK ${card.atk || "0"}  /  DEF ${card.def || "0"}`}
+              singleLine
+              minFontSize={16}
+              maxFontSize={48}
+              className="font-[family-name:var(--font-cinzel)] font-black tracking-wider text-right drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] text-[#f5ebd7]"
+            />
           </CardSlot>
         )}
       </div>

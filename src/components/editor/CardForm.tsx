@@ -105,10 +105,10 @@ export const CardForm: React.FC = () => {
               <input
                 id="card-cost"
                 type="text"
-                maxLength={3}
+                maxLength={2}
                 value={card.cost ?? ""}
                 onChange={(e) => updateField("cost", e.target.value)}
-                placeholder="0-99"
+                placeholder="0-9"
                 className="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-center text-[#f0e6cf] font-[family-name:var(--font-cinzel)] font-black focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all placeholder:font-sans placeholder:text-zinc-600"
               />
             </div>
@@ -119,30 +119,32 @@ export const CardForm: React.FC = () => {
         {showAtkDef && (
           <div className="grid grid-cols-2 gap-3 p-3 rounded-xl border border-zinc-800/80 bg-zinc-900/40 animate-fadeIn">
             <div className="space-y-1.5">
-              <label htmlFor="card-atk" className="text-xs font-medium text-amber-400 flex items-center gap-1.5">
+              <label htmlFor="card-atk" className="text-xs font-medium text-amber-400 flex items-center justify-between">
                 <span>ATK (Ataque)</span>
+                <span className="text-[10px] text-zinc-500 font-normal">1-2 cifras</span>
               </label>
               <input
                 id="card-atk"
                 type="text"
-                maxLength={5}
+                maxLength={3}
                 value={card.atk ?? ""}
                 onChange={(e) => updateField("atk", e.target.value)}
-                placeholder="Ej. 3000 o ?"
+                placeholder="Ej. 8 o ?"
                 className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-[#f0e6cf] font-[family-name:var(--font-cinzel)] font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="card-def" className="text-xs font-medium text-blue-400 flex items-center gap-1.5">
+              <label htmlFor="card-def" className="text-xs font-medium text-blue-400 flex items-center justify-between">
                 <span>DEF (Defensa)</span>
+                <span className="text-[10px] text-zinc-500 font-normal">1-2 cifras</span>
               </label>
               <input
                 id="card-def"
                 type="text"
-                maxLength={5}
+                maxLength={3}
                 value={card.def ?? ""}
                 onChange={(e) => updateField("def", e.target.value)}
-                placeholder="Ej. 2500 o ?"
+                placeholder="Ej. 6 o ?"
                 className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-[#f0e6cf] font-[family-name:var(--font-cinzel)] font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
               />
             </div>

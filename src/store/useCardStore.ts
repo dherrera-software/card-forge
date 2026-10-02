@@ -14,9 +14,9 @@ const DEFAULT_CARD: CardData = {
   id: "card-default",
   type: "monster",
   name: "DRAGÓN DEL ABISMO",
-  cost: "7",
-  atk: "3200",
-  def: "2800",
+  cost: "5",
+  atk: "8",
+  def: "6",
   effect:
     "Cuando esta criatura entra en juego, destruye todas las cartas en juego con un coste de 3 o menor.\n\nUna vez por turno, puedes descartar 1 carta para anular un efecto enemigo.",
   art: {
@@ -75,8 +75,8 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
         type,
         // Limpiamos o inicializamos campos según el tipo
         cost: type === "arcano" ? undefined : (state.card.cost ?? "1"),
-        atk: type === "monster" ? (state.card.atk ?? "1000") : undefined,
-        def: type === "monster" ? (state.card.def ?? "1000") : undefined,
+        atk: type === "monster" ? (state.card.atk ?? "5") : undefined,
+        def: type === "monster" ? (state.card.def ?? "5") : undefined,
         updatedAt: Date.now(),
       };
       debouncedSaveCurrent(nextCard);
@@ -180,8 +180,8 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
       type,
       name: "NUEVA CARTA",
       cost: type !== "arcano" ? "1" : undefined,
-      atk: type === "monster" ? "1000" : undefined,
-      def: type === "monster" ? "1000" : undefined,
+      atk: type === "monster" ? "5" : undefined,
+      def: type === "monster" ? "5" : undefined,
       effect: "Descripción del efecto...",
       art: {
         zoom: 1,

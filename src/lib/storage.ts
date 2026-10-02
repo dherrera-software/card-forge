@@ -57,6 +57,18 @@ export async function loadCurrentCard(): Promise<CardData | null> {
     }
 
     const card = parsed.data;
+
+    // Sanitizar stats heredados con más de 2 cifras (datos cacheados de versión anterior)
+    const sanitizeStat = (val: string | undefined): string | undefined => {
+      if (!val) return val;
+      // Permitir "?" u otros strings cortos. Solo truncar si son números de > 2 dígitos
+      const trimmed = val.trim();
+      if (/^\d{3,}$/.test(trimmed)) return trimmed.slice(0, 2);
+      return trimmed;
+    };
+    card.atk = sanitizeStat(card.atk);
+    card.def = sanitizeStat(card.def);
+
     if (card.art.imageId) {
       const blob = await getImageBlob(card.art.imageId);
       if (blob) {
