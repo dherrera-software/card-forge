@@ -65,32 +65,32 @@ function drawFrame(type) {
   const H = 1536;
 
   return createPng(W, H, (setPixel) => {
-    // Fill with rich dark navy / slate
+    // Fill background with rich dark fantasy navy
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        // Outer dark gradient
-        const isBorder = (x < 28 || x >= W - 28 || y < 28 || y >= H - 28);
-        const isInnerGold = (
-          (x >= 32 && x <= 40 && y >= 32 && y <= H - 32) ||
-          (x >= W - 40 && x <= W - 32 && y >= 32 && y <= H - 32) ||
-          (y >= 32 && y <= 40 && x >= 32 && x <= W - 32) ||
-          (y >= H - 40 && y <= H - 32 && x >= 32 && x <= W - 32)
+        const isBorderOuter = (x < 18 || x >= W - 18 || y < 18 || y >= H - 18);
+        const isOuterGold = (
+          (x >= 22 && x <= 26 && y >= 22 && y <= H - 22) ||
+          (x >= W - 26 && x <= W - 22 && y >= 22 && y <= H - 22) ||
+          (y >= 22 && y <= 26 && x >= 22 && x <= W - 22) ||
+          (y >= H - 26 && y <= H - 22 && x >= 22 && x <= W - 22)
         );
 
-        if (isInnerGold) {
-          // Gold accent
-          setPixel(x, y, 212, 175, 55, 255);
-        } else if (isBorder) {
-          setPixel(x, y, 15, 20, 30, 255);
+        if (isOuterGold) {
+          // Double golden fillet border
+          setPixel(x, y, 218, 175, 55, 255);
+        } else if (isBorderOuter) {
+          // Deep dark rim
+          setPixel(x, y, 10, 14, 20, 255);
         } else {
-          // Central background
-          setPixel(x, y, 22, 28, 42, 255);
+          // Dark textured slate background
+          setPixel(x, y, 15, 20, 28, 255);
         }
       }
     }
 
-    // Window slot outlines
-    function drawRect(rx, ry, rw, rh, r, g, b, a, thickness = 4) {
+    // Window slot helper: draws golden ornamental border and fills panel background
+    function drawSlotBox(rx, ry, rw, rh, fillAlpha = 220, borderThickness = 4) {
       const x1 = Math.round(rx * W / 100);
       const y1 = Math.round(ry * H / 100);
       const x2 = Math.round((rx + rw) * W / 100);
@@ -98,36 +98,37 @@ function drawFrame(type) {
 
       for (let y = y1; y <= y2; y++) {
         for (let x = x1; x <= x2; x++) {
-          const isEdge = (x < x1 + thickness || x > x2 - thickness || y < y1 + thickness || y > y2 - thickness);
+          const isEdge = (x < x1 + borderThickness || x > x2 - borderThickness || y < y1 + borderThickness || y > y2 - borderThickness);
           if (isEdge) {
-            setPixel(x, y, r, g, b, a);
+            // Elegant gold border
+            setPixel(x, y, 212, 175, 55, 255);
+          } else if (fillAlpha > 0) {
+            // Deep dark transparent panel
+            setPixel(x, y, 12, 16, 24, fillAlpha);
           } else {
-            // Semi-translucent panel background
-            setPixel(x, y, 12, 16, 24, 230);
+            // Completely transparent (for art window)
+            setPixel(x, y, 0, 0, 0, 0);
           }
         }
       }
     }
 
-    // Art window (center)
-    drawRect(7.0, 9.1, 86.2, 72.8, 180, 150, 60, 255, 6);
+    // 1. Art window (center): fillAlpha = 0 (TRANSPARENT so card art shines through!)
+    drawSlotBox(4.8, 9.2, 90.4, 70.8, 0, 5);
 
-    // Name slot
+    // 2. Name slot and Cost medallion
     if (type === 'arcano') {
-      drawRect(7.6, 2.7, 85.0, 5.7, 212, 175, 55, 255, 4);
+      // Arcano: Full width name slot
+      drawSlotBox(4.8, 2.2, 90.4, 6.2, 230, 4);
     } else {
-      drawRect(20.0, 2.7, 75.2, 5.7, 212, 175, 55, 255, 4);
       // Cost medallion
-      drawRect(3.8, 2.1, 12.9, 8.6, 240, 195, 60, 255, 5);
+      drawSlotBox(4.8, 2.2, 11.5, 6.2, 235, 4);
+      // Name bar
+      drawSlotBox(17.5, 2.2, 77.7, 6.2, 230, 4);
     }
 
-    // Effect slot (wider)
-    drawRect(5.2, 82.5, 89.6, 13.5, 212, 175, 55, 255, 4);
-
-    // ATK / DEF badge for monster (compact for 1-2 digit stats)
-    if (type === 'monster') {
-      drawRect(75.5, 91.8, 18.5, 3.6, 255, 215, 0, 255, 3);
-    }
+    // 3. Wide Effect slot (consistent 90.4% width!)
+    drawSlotBox(4.8, 81.0, 90.4, 15.6, 235, 4);
   });
 }
 
@@ -138,11 +139,9 @@ if (!fs.existsSync(framesDir)) {
 
 ['monster', 'general', 'arcano'].forEach((type) => {
   const filePath = path.join(framesDir, `${type}.png`);
-  if (!fs.existsSync(filePath)) {
-    console.log(`Generating placeholder frame for ${type}...`);
-    const png = drawFrame(type);
-    fs.writeFileSync(filePath, png);
-    console.log(`Created ${filePath} (${(png.length / 1024).toFixed(1)} KB)`);
-  }
+  console.log(`Generating placeholder frame for ${type}...`);
+  const png = drawFrame(type);
+  fs.writeFileSync(filePath, png);
+  console.log(`Created ${filePath} (${(png.length / 1024).toFixed(1)} KB)`);
 });
-console.log('All placeholder frames ready.');
+console.log('All placeholder frames regenerated successfully.');

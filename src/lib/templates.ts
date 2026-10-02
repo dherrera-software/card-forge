@@ -1,40 +1,34 @@
 import { CardTemplate, CardType } from "./schema";
 
-/**
- * NOTA: con el rediseño de Card.tsx basado en CSS Grid,
- * los slots name/effect/atkdef ya no se usan como posición absoluta.
- * Solo se mantienen art (todavía posicional) y frameSrc.
- * Los valores numéricos sirven únicamente para el modo calibración (CardSlot).
- */
 export const CARD_TEMPLATES: Record<CardType, CardTemplate> = {
   monster: {
     type: "monster",
     frameSrc: "/frames/monster.png",
     slots: {
-      name:   { x: 14.0, y: 1.5,  w: 82.5, h: 7.5  },
-      cost:   { x: 2.0,  y: 1.5,  w: 12.0, h: 7.5  },
-      art:    { x: 3.5,  y: 9.0,  w: 93.0, h: 72.0 },
-      effect: { x: 3.5,  y: 81.0, w: 93.0, h: 11.5 },
-      atkdef: { x: 3.5,  y: 92.5, w: 93.0, h: 5.0  },
+      name:   { x: 17.5, y: 2.2,  w: 77.7, h: 6.2  },
+      cost:   { x: 4.8,  y: 2.2,  w: 11.5, h: 6.2  },
+      art:    { x: 4.8,  y: 9.2,  w: 90.4, h: 70.8 },
+      effect: { x: 4.8,  y: 81.0, w: 90.4, h: 15.6 },
+      atkdef: { x: 67.5, y: 91.0, w: 26.5, h: 4.6  },
     },
   },
   general: {
     type: "general",
     frameSrc: "/frames/general.png",
     slots: {
-      name:   { x: 14.0, y: 1.5, w: 82.5, h: 7.5  },
-      cost:   { x: 2.0,  y: 1.5, w: 12.0, h: 7.5  },
-      art:    { x: 3.5,  y: 9.0, w: 93.0, h: 72.0 },
-      effect: { x: 3.5,  y: 81.0, w: 93.0, h: 16.0 },
+      name:   { x: 17.5, y: 2.2,  w: 77.7, h: 6.2  },
+      cost:   { x: 4.8,  y: 2.2,  w: 11.5, h: 6.2  },
+      art:    { x: 4.8,  y: 9.2,  w: 90.4, h: 70.8 },
+      effect: { x: 4.8,  y: 81.0, w: 90.4, h: 15.6 },
     },
   },
   arcano: {
     type: "arcano",
     frameSrc: "/frames/arcano.png",
     slots: {
-      name:   { x: 3.5,  y: 1.5, w: 93.0, h: 7.5  },
-      art:    { x: 3.5,  y: 9.0, w: 93.0, h: 72.0 },
-      effect: { x: 3.5,  y: 81.0, w: 93.0, h: 16.0 },
+      name:   { x: 4.8,  y: 2.2,  w: 90.4, h: 6.2  },
+      art:    { x: 4.8,  y: 9.2,  w: 90.4, h: 70.8 },
+      effect: { x: 4.8,  y: 81.0, w: 90.4, h: 15.6 },
     },
   },
 };

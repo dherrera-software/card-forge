@@ -31,12 +31,10 @@ export const AutoFitText: React.FC<AutoFitTextProps> = ({
     const content = textRef.current;
     if (!container || !content) return;
 
-    // Esperamos a tener dimensiones reales
     const cW = container.clientWidth;
     const cH = container.clientHeight;
     if (cW <= 0 || cH <= 0) return;
 
-    // Búsqueda binaria del tamaño máximo que cabe
     let lo = minFontSize;
     let hi = maxFontSize;
     let best = minFontSize;
@@ -46,7 +44,7 @@ export const AutoFitText: React.FC<AutoFitTextProps> = ({
       if (singleLine) {
         return content.scrollWidth <= cW && content.scrollHeight <= cH;
       }
-      return content.scrollHeight <= cH;
+      return content.scrollHeight <= cH && content.scrollWidth <= cW + 2;
     };
 
     while (lo <= hi) {
@@ -59,17 +57,24 @@ export const AutoFitText: React.FC<AutoFitTextProps> = ({
       }
     }
 
-    // Aplicar sin causar re-render si no cambió
     content.style.fontSize = `${best}px`;
     setFontSize((prev) => (prev === best ? prev : best));
   }, [text, minFontSize, maxFontSize, singleLine]);
 
-  // Calcular al montar y cuando cambia el texto
   useIsomorphicLayoutEffect(() => {
     calculateFit();
+    const raf = requestAnimationFrame(() => calculateFit());
+    return () => cancelAnimationFrame(raf);
   }, [calculateFit]);
 
-  // Recalcular cuando el contenedor cambia de tamaño
+  useEffect(() => {
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.ready.then(() => {
+        calculateFit();
+      });
+    }
+  }, [calculateFit]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container || typeof ResizeObserver === "undefined") return;
@@ -97,7 +102,7 @@ export const AutoFitText: React.FC<AutoFitTextProps> = ({
         ref={textRef}
         style={{
           fontSize: `${fontSize}px`,
-          lineHeight: singleLine ? 1.1 : 1.22,
+          lineHeight: singleLine ? 1.15 : 1.25,
           whiteSpace: singleLine ? "nowrap" : "pre-wrap",
           wordBreak: singleLine ? "normal" : "break-word",
           overflowWrap: singleLine ? "normal" : "anywhere",
