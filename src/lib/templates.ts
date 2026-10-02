@@ -1,36 +1,40 @@
 import { CardTemplate, CardType } from "./schema";
 
+/**
+ * NOTA: con el rediseño de Card.tsx basado en CSS Grid,
+ * los slots name/effect/atkdef ya no se usan como posición absoluta.
+ * Solo se mantienen art (todavía posicional) y frameSrc.
+ * Los valores numéricos sirven únicamente para el modo calibración (CardSlot).
+ */
 export const CARD_TEMPLATES: Record<CardType, CardTemplate> = {
   monster: {
     type: "monster",
     frameSrc: "/frames/monster.png",
     slots: {
-      name:   { x: 20.0, y: 2.7,  w: 75.2, h: 5.7  },
-      cost:   { x: 3.8,  y: 2.1,  w: 12.9, h: 8.6  },
-      art:    { x: 7.0,  y: 9.1,  w: 86.2, h: 72.8 },
-      // Recuadro de efectos: máximo ancho útil del interior del marco
-      effect: { x: 3.5,  y: 81.8, w: 93.0, h: 14.5 },
-      // ATK/DEF: esquina inferior derecha, suficiente ancho para 1-2 dígitos + etiquetas
-      atkdef: { x: 56.0, y: 92.0, w: 40.0, h: 3.8  },
+      name:   { x: 14.0, y: 1.5,  w: 82.5, h: 7.5  },
+      cost:   { x: 2.0,  y: 1.5,  w: 12.0, h: 7.5  },
+      art:    { x: 3.5,  y: 9.0,  w: 93.0, h: 72.0 },
+      effect: { x: 3.5,  y: 81.0, w: 93.0, h: 11.5 },
+      atkdef: { x: 3.5,  y: 92.5, w: 93.0, h: 5.0  },
     },
   },
   general: {
     type: "general",
     frameSrc: "/frames/general.png",
     slots: {
-      name:   { x: 20.0, y: 2.7,  w: 75.2, h: 5.7  },
-      cost:   { x: 3.8,  y: 2.1,  w: 12.9, h: 8.6  },
-      art:    { x: 7.0,  y: 9.1,  w: 86.2, h: 72.8 },
-      effect: { x: 3.5,  y: 81.8, w: 93.0, h: 14.5 },
+      name:   { x: 14.0, y: 1.5, w: 82.5, h: 7.5  },
+      cost:   { x: 2.0,  y: 1.5, w: 12.0, h: 7.5  },
+      art:    { x: 3.5,  y: 9.0, w: 93.0, h: 72.0 },
+      effect: { x: 3.5,  y: 81.0, w: 93.0, h: 16.0 },
     },
   },
   arcano: {
     type: "arcano",
     frameSrc: "/frames/arcano.png",
     slots: {
-      name:   { x: 7.6,  y: 2.7,  w: 85.0, h: 5.7  },
-      art:    { x: 7.0,  y: 9.1,  w: 86.2, h: 72.8 },
-      effect: { x: 3.5,  y: 81.8, w: 93.0, h: 14.5 },
+      name:   { x: 3.5,  y: 1.5, w: 93.0, h: 7.5  },
+      art:    { x: 3.5,  y: 9.0, w: 93.0, h: 72.0 },
+      effect: { x: 3.5,  y: 81.0, w: 93.0, h: 16.0 },
     },
   },
 };
