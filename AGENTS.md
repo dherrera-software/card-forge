@@ -185,3 +185,13 @@ Exportar un mazo completo en ZIP, hoja de impresión en PDF, cuentas de usuario 
 2. Crea `lib/schema.ts` y `lib/templates.ts` con los tipos, el esquema Zod y la configuración de los tres tipos de carta.
 3. Crea el componente `<Card />` a 1024×1536 con marco, ilustración y textos, usando marcos provisionales si todavía no están en `public/frames/`.
 4. Muestra un plan de los pasos siguientes y espera confirmación antes de continuar con el formulario y la exportación.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

@@ -1,147 +1,196 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useCardStore } from "@/store/useCardStore";
 import { Card } from "@/components/card/Card";
-import { CardData, CardType } from "@/lib/schema";
-
-const SAMPLE_CARDS: Record<CardType, CardData> = {
-  monster: {
-    id: "sample-monster",
-    type: "monster",
-    name: "DRAGÓN DEL ABISMO",
-    cost: "7",
-    atk: "3200",
-    def: "2800",
-    effect:
-      "Cuando esta criatura entra en juego, destruye todas las cartas en juego con un coste de 3 o menor.\n\nUna vez por turno, puedes descartar 1 carta para anular un efecto enemigo.",
-    art: {
-      zoom: 1,
-      offsetX: 0,
-      offsetY: 0,
-    },
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
-  general: {
-    id: "sample-general",
-    type: "general",
-    name: "RELIQUIA DE LOS TIEMPOS",
-    cost: "4",
-    effect:
-      "Roba 2 cartas al comienzo de tu fase principal.\nSi controlas una carta de tipo Arcano, roba 1 carta adicional.",
-    art: {
-      zoom: 1,
-      offsetX: 0,
-      offsetY: 0,
-    },
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
-  arcano: {
-    id: "sample-arcano",
-    type: "arcano",
-    name: "EL JUICIO CELESTIAL",
-    effect:
-      "Elige un jugador. Ese jugador destierra la mitad de las cartas de su cementerio boca abajo.\nNo se puede responder a este efecto.",
-    art: {
-      zoom: 1,
-      offsetX: 0,
-      offsetY: 0,
-    },
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
-};
+import { CardForm } from "@/components/editor/CardForm";
+import { ExportPanel } from "@/components/editor/ExportPanel";
+import { CardListModal } from "@/components/editor/CardListModal";
+import { Sparkles, Sliders, FolderOpen, Eye } from "lucide-react";
 
 export default function HomePage() {
-  const [selectedType, setSelectedType] = useState<CardType>("monster");
-  const [calibration, setCalibration] = useState<boolean>(false);
-  const [scale, setScale] = useState<number>(0.42);
+  const {
+    card,
+    isLoaded,
+    calibration,
+    setCalibration,
+    previewScale,
+    setPreviewScale,
+    loadSavedData,
+    savedCards,
+  } = useCardStore();
 
-  const card = SAMPLE_CARDS[selectedType];
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const exportCardRef = useRef<HTMLDivElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    loadSavedData();
+  }, [loadSavedData]);
+
+  // Ajuste automático de escala inicial para pantallas de escritorio
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const w = window.innerWidth;
+      if (w < 768) {
+        // En móvil preview arriba
+        setPreviewScale(Math.min(0.35, (w - 32) / 1024));
+      } else if (w < 1280) {
+        setPreviewScale(0.36);
+      } else {
+        setPreviewScale(0.44);
+      }
+    }
+  }, [setPreviewScale]);
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0d14] text-[#f0e6cf]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+          <span className="font-serif text-sm tracking-wider text-amber-200/80">
+            Cargando Card Forge...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen flex flex-col items-center p-6 bg-[#0a0d14] text-[#f0e6cf]">
-      {/* Header */}
-      <header className="w-full max-w-5xl flex flex-col sm:flex-row items-center justify-between pb-6 mb-6 border-b border-amber-900/30 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-wider text-amber-300 drop-shadow-sm">
-            Card Forge
-          </h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Fase 1: Renderizado base a 1024×1536 px con plantillas calibrables
-          </p>
+    <div className="min-h-screen flex flex-col bg-[#0a0d14] text-[#f0e6cf]">
+      {/* Barra de navegación superior */}
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-[#0c1017]/90 backdrop-blur-md px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-black shadow-md shadow-amber-500/20">
+            <Sparkles className="w-5 h-5 fill-current" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold font-[family-name:var(--font-cinzel)] tracking-wider text-amber-300">
+              CARD FORGE
+            </h1>
+            <p className="text-[11px] text-zinc-400 font-sans">
+              Generador de Cartas Coleccionables
+            </p>
+          </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-wrap items-center gap-3 bg-zinc-900/80 p-2 rounded-xl border border-zinc-800">
-          <div className="flex rounded-lg overflow-hidden border border-zinc-700">
-            {(["monster", "general", "arcano"] as CardType[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setSelectedType(t)}
-                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
-                  selectedType === t
-                    ? "bg-amber-500 text-black font-bold"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
-                }`}
-              >
-                {t === "monster" ? "Monstruo" : t === "general" ? "General" : "Arcano"}
-              </button>
-            ))}
-          </div>
+        {/* Acciones de la barra */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsLibraryOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 border border-zinc-700 transition-colors"
+          >
+            <FolderOpen className="w-4 h-4 text-amber-400" />
+            <span className="hidden sm:inline">Colección</span>
+            <span className="bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded text-[10px]">
+              {savedCards.length}
+            </span>
+          </button>
 
-          <label className="flex items-center gap-2 cursor-pointer text-xs font-medium bg-zinc-800 px-3 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-750">
+          <label
+            title="Muestra los rectángulos de cada slot para verificar porcentajes"
+            className="flex items-center gap-2 cursor-pointer text-xs font-semibold bg-zinc-800/80 hover:bg-zinc-750 px-3 py-1.5 rounded-lg border border-zinc-700 transition-colors"
+          >
             <input
               type="checkbox"
               checked={calibration}
               onChange={(e) => setCalibration(e.target.checked)}
-              className="accent-amber-400 rounded"
+              className="accent-amber-400 rounded cursor-pointer"
             />
-            <span>Modo Calibración</span>
+            <span className="hidden sm:inline">Modo Calibración</span>
+            <span className="sm:hidden">Calibrar</span>
           </label>
-
-          <div className="flex items-center gap-2 px-2 text-xs text-zinc-400">
-            <span>Escala:</span>
-            <input
-              type="range"
-              min={0.25}
-              max={0.65}
-              step={0.01}
-              value={scale}
-              onChange={(e) => setScale(parseFloat(e.target.value))}
-              className="w-20 accent-amber-400"
-            />
-            <span className="font-mono">{Math.round(scale * 100)}%</span>
-          </div>
         </div>
       </header>
 
-      {/* Preview Container */}
-      <div className="flex flex-col items-center justify-center w-full">
-        <div
-          className="relative rounded-2xl shadow-2xl shadow-black/80 overflow-hidden border border-amber-900/40"
-          style={{
-            width: `${1024 * scale}px`,
-            height: `${1536 * scale}px`,
-          }}
+      {/* Contenido principal: Escritorio (Form izquierda, Preview derecha) / Móvil (Preview arriba, Form abajo) */}
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Columna Izquierda: Formulario y Exportación */}
+        <section className="lg:col-span-6 xl:col-span-5 order-2 lg:order-1 space-y-6">
+          <CardForm />
+          <ExportPanel getExportNode={() => exportCardRef.current} />
+        </section>
+
+        {/* Columna Derecha: Vista previa fija */}
+        <section
+          ref={previewContainerRef}
+          className="lg:col-span-6 xl:col-span-7 order-1 lg:order-2 flex flex-col items-center lg:sticky lg:top-20 z-20 space-y-4"
         >
+          {/* Controles de vista previa */}
+          <div className="w-full flex items-center justify-between bg-zinc-900/60 border border-zinc-800/80 rounded-xl px-4 py-2.5 text-xs text-zinc-400">
+            <div className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-amber-400" />
+              <span className="font-semibold text-zinc-200 uppercase tracking-wider text-[11px]">
+                Vista Previa en Vivo
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5">
+                <Sliders className="w-3.5 h-3.5" /> Escala:
+              </span>
+              <input
+                type="range"
+                min={0.25}
+                max={0.65}
+                step={0.01}
+                value={previewScale}
+                onChange={(e) => setPreviewScale(parseFloat(e.target.value))}
+                className="w-24 accent-amber-400 bg-zinc-800 rounded h-1 cursor-pointer"
+              />
+              <span className="font-mono text-amber-300 w-9 text-right">
+                {Math.round(previewScale * 100)}%
+              </span>
+            </div>
+          </div>
+
+          {/* Marco de visualización con escalado CSS */}
           <div
-            className="origin-top-left"
+            className="relative rounded-2xl shadow-2xl shadow-black/90 overflow-hidden border border-amber-900/40 bg-black/40"
             style={{
-              transform: `scale(${scale})`,
-              transformOrigin: "top left",
+              width: `${1024 * previewScale}px`,
+              height: `${1536 * previewScale}px`,
             }}
           >
-            <Card card={card} calibration={calibration} />
+            <div
+              className="origin-top-left"
+              style={{
+                transform: `scale(${previewScale})`,
+                transformOrigin: "top left",
+              }}
+            >
+              <Card card={card} calibration={calibration} />
+            </div>
           </div>
-        </div>
 
-        <p className="text-xs text-zinc-500 mt-4 text-center">
-          Renderizado en vivo con resolución fija 1024×1536 px • Escalado visual CSS al{" "}
-          {Math.round(scale * 100)}%
-        </p>
+          <p className="text-[11px] text-zinc-500 text-center">
+            Resolución nativa: 1024×1536 px • Exporta con tipografía Cinzel y serif nítida
+          </p>
+        </section>
+      </main>
+
+      {/* Modal de la Colección */}
+      <CardListModal
+        isOpen={isLibraryOpen}
+        onClose={() => setIsLibraryOpen(false)}
+      />
+
+      {/* Nodo invisible fuera de pantalla a 1024x1536 exactos para exportación fotográfica */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          left: "-99999px",
+          top: "-99999px",
+          width: "1024px",
+          height: "1536px",
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      >
+        <Card ref={exportCardRef} card={card} calibration={false} />
       </div>
-    </main>
+    </div>
   );
 }
