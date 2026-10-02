@@ -11,6 +11,9 @@ interface AutoFitTextProps {
   style?: React.CSSProperties;
 }
 
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export const AutoFitText: React.FC<AutoFitTextProps> = ({
   text,
   minFontSize = 10,
@@ -23,59 +26,50 @@ export const AutoFitText: React.FC<AutoFitTextProps> = ({
   const textRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(maxFontSize);
 
-  const useIsomorphicLayoutEffect =
-    typeof window !== "undefined" ? useLayoutEffect : useEffect;
-
   const calculateFit = useCallback(() => {
     const container = containerRef.current;
     const content = textRef.current;
     if (!container || !content) return;
 
-    const targetWidth = container.clientWidth;
-    const targetHeight = container.clientHeight;
+    // Esperamos a tener dimensiones reales
+    const cW = container.clientWidth;
+    const cH = container.clientHeight;
+    if (cW <= 0 || cH <= 0) return;
 
-    if (targetWidth <= 0 || targetHeight <= 0) return;
+    // Búsqueda binaria del tamaño máximo que cabe
+    let lo = minFontSize;
+    let hi = maxFontSize;
+    let best = minFontSize;
 
-    // Búsqueda binaria para encontrar el tamaño óptimo de fuente
-    let low = minFontSize;
-    let high = maxFontSize;
-    let bestSize = minFontSize;
-
-    // Helper para verificar desbordamiento
-    const overflows = (size: number): boolean => {
+    const fits = (size: number): boolean => {
       content.style.fontSize = `${size}px`;
-      content.style.lineHeight = singleLine ? "1.15" : `${Math.max(1.15, 1.25 - (36 - size) * 0.003)}`;
-
       if (singleLine) {
-        return (
-          content.scrollWidth > targetWidth ||
-          content.scrollHeight > targetHeight
-        );
+        return content.scrollWidth <= cW && content.scrollHeight <= cH;
       }
-      return (
-        content.scrollHeight > targetHeight ||
-        content.scrollWidth > targetWidth
-      );
+      return content.scrollHeight <= cH;
     };
 
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      if (overflows(mid)) {
-        high = mid - 1; // Demasiado grande, probamos menor
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (fits(mid)) {
+        best = mid;
+        lo = mid + 1;
       } else {
-        bestSize = mid; // Cabe bien, intentamos un tamaño mayor
-        low = mid + 1;
+        hi = mid - 1;
       }
     }
 
-    setFontSize(bestSize);
-    content.style.fontSize = `${bestSize}px`;
+    // Aplicar sin causar re-render si no cambió
+    content.style.fontSize = `${best}px`;
+    setFontSize((prev) => (prev === best ? prev : best));
   }, [text, minFontSize, maxFontSize, singleLine]);
 
+  // Calcular al montar y cuando cambia el texto
   useIsomorphicLayoutEffect(() => {
     calculateFit();
   }, [calculateFit]);
 
+  // Recalcular cuando el contenedor cambia de tamaño
   useEffect(() => {
     const container = containerRef.current;
     if (!container || typeof ResizeObserver === "undefined") return;
@@ -90,21 +84,25 @@ export const AutoFitText: React.FC<AutoFitTextProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full flex flex-col justify-center overflow-hidden ${className}`}
-      style={style}
+      className={`w-full h-full overflow-hidden ${className}`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        minHeight: 0,
+        ...style,
+      }}
     >
       <div
         ref={textRef}
-        className={
-          singleLine
-            ? "truncate whitespace-nowrap text-center"
-            : "whitespace-pre-wrap break-words text-left hyphens-auto"
-        }
         style={{
           fontSize: `${fontSize}px`,
-          lineHeight: singleLine ? 1.15 : 1.2,
-          wordBreak: "break-word",
-          overflowWrap: "anywhere",
+          lineHeight: singleLine ? 1.1 : 1.22,
+          whiteSpace: singleLine ? "nowrap" : "pre-wrap",
+          wordBreak: singleLine ? "normal" : "break-word",
+          overflowWrap: singleLine ? "normal" : "anywhere",
+          overflow: "hidden",
+          textAlign: singleLine ? "center" : "left",
         }}
       >
         {text}
