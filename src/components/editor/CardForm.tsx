@@ -3,11 +3,12 @@
 import React from "react";
 import { useCardStore } from "@/store/useCardStore";
 import { CardType } from "@/lib/schema";
+import { CARD_FRAME_COLORS } from "@/lib/templates";
 import { ArtAdjuster } from "./ArtAdjuster";
-import { Shield, Sparkles, Swords, RefreshCw } from "lucide-react";
+import { Shield, Sparkles, Swords, RefreshCw, Palette } from "lucide-react";
 
 export const CardForm: React.FC = () => {
-  const { card, setCardType, updateField, resetCard } = useCardStore();
+  const { card, setCardType, setFrameColor, updateField, resetCard } = useCardStore();
 
   const isMonster = card.type === "monster";
   const isArcano = card.type === "arcano";
@@ -72,6 +73,61 @@ export const CardForm: React.FC = () => {
               >
                 <div className="mb-1.5">{icon}</div>
                 <span>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Selector de Color del Marco */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-semibold text-amber-300 flex items-center gap-2">
+            <Palette className="w-4 h-4 text-amber-400" />
+            Color del Marco
+          </label>
+          <span className="text-xs text-amber-400/90 font-medium tracking-wide">
+            {CARD_FRAME_COLORS.find((c) => c.id === (card.frameColor || "blue"))?.label} —{" "}
+            <span className="text-zinc-400 text-[11px]">
+              {CARD_FRAME_COLORS.find((c) => c.id === (card.frameColor || "blue"))?.desc}
+            </span>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5 p-2 bg-zinc-900/60 border border-zinc-800 rounded-xl">
+          {CARD_FRAME_COLORS.map((col) => {
+            const isSelected = (card.frameColor || "blue") === col.id;
+            return (
+              <button
+                key={col.id}
+                type="button"
+                onClick={() => setFrameColor(col.id)}
+                title={`${col.label}: ${col.desc}`}
+                className={`group relative flex flex-col items-center justify-center py-2 px-1 rounded-lg border transition-all ${
+                  isSelected
+                    ? "border-amber-400 bg-amber-500/15 ring-2 ring-amber-400/40 shadow-md shadow-amber-500/10 scale-102"
+                    : "border-zinc-800/80 bg-zinc-950/40 hover:border-zinc-700 hover:bg-zinc-800/40"
+                }`}
+              >
+                <span
+                  className="w-6 h-6 rounded-full border border-black/50 shadow-sm flex items-center justify-center transition-transform group-hover:scale-110"
+                  style={{
+                    backgroundColor: col.badgeHex,
+                    borderColor: col.borderHex,
+                    boxShadow: isSelected ? `0 0 8px ${col.borderHex}88` : undefined,
+                  }}
+                >
+                  {isSelected && (
+                    <span className="w-2 h-2 rounded-full bg-amber-300 shadow-sm" />
+                  )}
+                </span>
+                <span
+                  className={`text-[10px] font-semibold tracking-tight mt-1.5 truncate max-w-full ${
+                    isSelected ? "text-amber-300" : "text-zinc-400 group-hover:text-zinc-200"
+                  }`}
+                >
+                  {col.label}
+                </span>
               </button>
             );
           })}

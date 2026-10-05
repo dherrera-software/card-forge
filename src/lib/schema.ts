@@ -3,6 +3,19 @@ import { z } from "zod";
 export const CardTypeSchema = z.enum(["monster", "general", "arcano"]);
 export type CardType = z.infer<typeof CardTypeSchema>;
 
+export const CardFrameColorSchema = z.enum([
+  "blue",
+  "red",
+  "yellow",
+  "orange",
+  "green",
+  "cyan",
+  "black",
+  "white",
+  "gray",
+]);
+export type CardFrameColor = z.infer<typeof CardFrameColorSchema>;
+
 export const ArtDataSchema = z.object({
   imageId: z.string().optional(),
   imageUrl: z.string().optional(), // Vista previa local (ObjectURL o Base64)
@@ -16,6 +29,7 @@ export const CardDataSchema = z.object({
   id: z.string(),
   type: CardTypeSchema,
   name: z.string(),
+  frameColor: CardFrameColorSchema.default("blue"),
   cost: z.string().max(3).optional(),
   atk: z.string().max(5).optional(),
   def: z.string().max(5).optional(),

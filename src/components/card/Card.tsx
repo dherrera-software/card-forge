@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from "react";
 import { CardData, CardTemplate } from "@/lib/schema";
-import { CARD_TEMPLATES } from "@/lib/templates";
+import { CARD_TEMPLATES, getFrameSrc } from "@/lib/templates";
 import { AutoFitText } from "./AutoFitText";
 import { CardSlot } from "./CardSlot";
 
@@ -25,7 +25,8 @@ export interface CardProps {
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ card, template: customTemplate, calibration = false, className = "" }, ref) => {
     const template = customTemplate || CARD_TEMPLATES[card.type] || CARD_TEMPLATES.monster;
-    const { frameSrc, slots } = template;
+    const { slots } = template;
+    const frameSrc = customTemplate?.frameSrc || getFrameSrc(card.frameColor || "blue");
 
     const isMonster = card.type === "monster";
     const isArcano = card.type === "arcano";
@@ -185,9 +186,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
               height: `${slots.name.h}%`,
               display: "flex",
               alignItems: "center",
-              justifyContent: isArcano ? "center" : "flex-start",
-              paddingLeft: isArcano ? "2%" : "3%",
-              paddingRight: isArcano ? "2%" : "3%",
+              justifyContent: "center",
+              paddingLeft: "3%",
+              paddingRight: "3%",
             }}
           >
             <AutoFitText
@@ -195,9 +196,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
               singleLine
               minFontSize={16}
               maxFontSize={42}
-              className={`font-[family-name:var(--font-cinzel)] font-bold tracking-wider text-[#f5ebd7] drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] ${
-                isArcano ? "text-center" : "text-left"
-              }`}
+              className="font-[family-name:var(--font-cinzel)] font-bold tracking-wider text-[#f5ebd7] text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"
             />
           </div>
 
@@ -210,7 +209,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
               top: `${slots.effect.y}%`,
               width: `${slots.effect.w}%`,
               height: `${slots.effect.h}%`,
-              padding: "1.2% 1.8%",
+              padding: "2% 3%",
               overflow: "hidden",
             }}
           >

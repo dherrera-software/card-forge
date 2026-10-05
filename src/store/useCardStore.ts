@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { CardData, CardType } from "@/lib/schema";
+import { CardData, CardFrameColor, CardType } from "@/lib/schema";
 import {
   saveCurrentCard,
   loadCurrentCard,
@@ -14,6 +14,7 @@ const DEFAULT_CARD: CardData = {
   id: "card-default",
   type: "monster",
   name: "DRAGÓN DEL ABISMO",
+  frameColor: "blue",
   cost: "5",
   atk: "8",
   def: "6",
@@ -37,6 +38,7 @@ interface CardStoreState {
 
   // Acciones
   setCardType: (type: CardType) => void;
+  setFrameColor: (color: CardFrameColor) => void;
   updateField: <K extends keyof CardData>(field: K, value: CardData[K]) => void;
   updateArt: (updates: Partial<CardData["art"]>) => void;
   setArtFile: (file: File) => Promise<void>;
@@ -77,6 +79,18 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
         cost: type === "arcano" ? undefined : (state.card.cost ?? "1"),
         atk: type === "monster" ? (state.card.atk ?? "5") : undefined,
         def: type === "monster" ? (state.card.def ?? "5") : undefined,
+        updatedAt: Date.now(),
+      };
+      debouncedSaveCurrent(nextCard);
+      return { card: nextCard };
+    });
+  },
+
+  setFrameColor: (color: CardFrameColor) => {
+    set((state) => {
+      const nextCard: CardData = {
+        ...state.card,
+        frameColor: color,
         updatedAt: Date.now(),
       };
       debouncedSaveCurrent(nextCard);
@@ -179,6 +193,7 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
       id: `card_${Date.now()}`,
       type,
       name: "NUEVA CARTA",
+      frameColor: get().card.frameColor || "blue",
       cost: type !== "arcano" ? "1" : undefined,
       atk: type === "monster" ? "5" : undefined,
       def: type === "monster" ? "5" : undefined,
