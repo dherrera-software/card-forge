@@ -20,10 +20,6 @@ export const CARD_FRAME_COLORS: ColorOption[] = [
   { id: "gray",   label: "Gris",     badgeHex: "#828780", borderHex: "#ced4da", desc: "Token" },
 ];
 
-export function getFrameSrc(color: CardFrameColor = "blue"): string {
-  return `/frames/frame_${color}.png`;
-}
-
 export const CARD_TEMPLATES: Record<CardType, CardTemplate> = {
   monster: {
     type: "monster",
