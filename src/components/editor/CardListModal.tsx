@@ -15,6 +15,12 @@ export const CardListModal: React.FC<CardListModalProps> = ({ isOpen, onClose })
 
   if (!isOpen) return null;
 
+  const TYPE_LABELS: Record<CardType, string> = {
+    monster: "Monstruo",
+    general: "Evento",
+    arcano: "Lider",
+  };
+
   const getTypeIcon = (type: CardType) => {
     switch (type) {
       case "monster":
@@ -68,7 +74,7 @@ export const CardListModal: React.FC<CardListModalProps> = ({ isOpen, onClose })
                       {c.name || "Sin nombre"}
                     </span>
                     <span className="text-[11px] uppercase tracking-wider text-zinc-500">
-                      • {c.type}
+                      • {TYPE_LABELS[c.type] || c.type}
                     </span>
                   </div>
                   <p className="text-xs text-zinc-400 line-clamp-1 mt-1 font-[family-name:var(--font-lora)]">

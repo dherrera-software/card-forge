@@ -33,8 +33,12 @@ export async function saveCurrentCard(card: CardData): Promise<void> {
   // Evitamos guardar imageUrl efímera (blob: o data:) en la metadata persistida
   const cardToSave: CardData = {
     ...card,
-    art: {
-      ...card.art,
+    background: {
+      ...card.background,
+      imageUrl: undefined,
+    },
+    character: {
+      ...card.character,
       imageUrl: undefined,
     },
     updatedAt: Date.now(),
@@ -43,7 +47,7 @@ export async function saveCurrentCard(card: CardData): Promise<void> {
 }
 
 /**
- * Carga los datos de la carta en edición actual y reconstituye la imagen si existe
+ * Carga los datos de la carta en edición actual y reconstituye las imágenes si existen
  */
 export async function loadCurrentCard(): Promise<CardData | null> {
   try {
@@ -69,12 +73,22 @@ export async function loadCurrentCard(): Promise<CardData | null> {
     card.atk = sanitizeStat(card.atk);
     card.def = sanitizeStat(card.def);
 
-    if (card.art.imageId) {
-      const blob = await getImageBlob(card.art.imageId);
+    // Cargar imagen de fondo si existe
+    if (card.background?.imageId) {
+      const blob = await getImageBlob(card.background.imageId);
       if (blob) {
-        card.art.imageUrl = URL.createObjectURL(blob);
+        card.background.imageUrl = URL.createObjectURL(blob);
       }
     }
+
+    // Cargar imagen de personaje si existe
+    if (card.character?.imageId) {
+      const blob = await getImageBlob(card.character.imageId);
+      if (blob) {
+        card.character.imageUrl = URL.createObjectURL(blob);
+      }
+    }
+
     return card;
   } catch (error) {
     console.error("Error loading current card from IndexedDB:", error);
@@ -88,8 +102,12 @@ export async function loadCurrentCard(): Promise<CardData | null> {
 export async function saveCardsList(cards: CardData[]): Promise<void> {
   const sanitized = cards.map((c) => ({
     ...c,
-    art: {
-      ...c.art,
+    background: {
+      ...c.background,
+      imageUrl: undefined,
+    },
+    character: {
+      ...c.character,
       imageUrl: undefined,
     },
   }));

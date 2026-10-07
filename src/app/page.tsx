@@ -11,7 +11,6 @@ import { Sparkles, Sliders, FolderOpen, Eye } from "lucide-react";
 export default function HomePage() {
   const {
     card,
-    isLoaded,
     calibration,
     setCalibration,
     previewScale,

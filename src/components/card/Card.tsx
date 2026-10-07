@@ -2,8 +2,9 @@
 
 import React, { forwardRef } from "react";
 import { CardData, CardTemplate } from "@/lib/schema";
-import { CARD_TEMPLATES, getFrameSrc } from "@/lib/templates";
+import { CARD_TEMPLATES } from "@/lib/templates";
 import { AutoFitText } from "./AutoFitText";
+import { CardFrameSvg } from "./CardFrameSvg";
 import { CardSlot } from "./CardSlot";
 
 export interface CardProps {
@@ -26,14 +27,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ card, template: customTemplate, calibration = false, className = "" }, ref) => {
     const template = customTemplate || CARD_TEMPLATES[card.type] || CARD_TEMPLATES.monster;
     const { slots } = template;
-    const frameSrc = customTemplate?.frameSrc || getFrameSrc(card.frameColor || "blue");
 
     const isMonster = card.type === "monster";
     const isArcano = card.type === "arcano";
     const showCost = !isArcano && !!slots.cost;
 
-    const { zoom = 1, offsetX = 0, offsetY = 0 } = card.art;
-    const artUrl = card.art.imageUrl;
+    const bg = card.background;
+    const char = card.character;
+    const hasAnyArt = Boolean(bg?.imageUrl || char?.imageUrl);
 
     return (
       <div
@@ -66,7 +67,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             background: "#080a0f",
           }}
         >
-          {artUrl ? (
+          {/* Capa 1: FONDO */}
+          {bg?.imageUrl && (
             <div
               style={{
                 position: "absolute",
@@ -74,24 +76,71 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                transform: `translate(${offsetX}px, ${offsetY}px) scale(${zoom})`,
+                transform: `translate(${bg.offsetX || 0}px, ${bg.offsetY || 0}px) scale(${bg.zoom || 1})`,
                 transition: "transform 75ms",
+                zIndex: 1,
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={artUrl}
-                alt={card.name || "Card Art"}
+                src={bg.imageUrl}
+                alt="Fondo de la carta"
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  maxWidth: "none",
+                  ...(bg.fitMode === "cover"
+                    ? { width: "100%", height: "100%", objectFit: "cover" }
+                    : bg.fitMode === "fill"
+                    ? { width: "100%", height: "100%", objectFit: "fill" }
+                    : {
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        width: "auto",
+                        height: "auto",
+                        objectFit: "contain",
+                      }),
                 }}
                 crossOrigin="anonymous"
               />
             </div>
-          ) : (
+          )}
+
+          {/* Capa 2: PERSONAJE (Recortado al marco) */}
+          {char?.imageUrl && char.clipToFrame !== false && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transform: `translate(${char.offsetX || 0}px, ${char.offsetY || 0}px) scale(${char.zoom || 1})`,
+                transition: "transform 75ms",
+                zIndex: 2,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={char.imageUrl}
+                alt={card.name || "Personaje"}
+                style={{
+                  ...(char.fitMode === "cover"
+                    ? { width: "100%", height: "100%", objectFit: "cover" }
+                    : char.fitMode === "fill"
+                    ? { width: "100%", height: "100%", objectFit: "fill" }
+                    : {
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        width: "auto",
+                        height: "auto",
+                        objectFit: "contain",
+                      }),
+                }}
+                crossOrigin="anonymous"
+              />
+            </div>
+          )}
+
+          {/* Placeholder cuando no hay ninguna imagen cargada */}
+          {!hasAnyArt && (
             <div
               style={{
                 position: "absolute",
@@ -101,6 +150,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: 0.35,
+                zIndex: 0,
               }}
             >
               <svg
@@ -123,7 +173,55 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           )}
         </div>
 
-        {/* ── 2. MARCO DECORATIVO PNG (zIndex: 2) ────────────────────── */}
+        {/* ── 2. PERSONAJE QUE SOBRESALE DEL MARCO (zIndex: 5, Pop-out 3D) ─ */}
+        {char?.imageUrl && char.clipToFrame === false && (
+          <div
+            style={{
+              position: "absolute",
+              left: `${slots.art.x}%`,
+              top: `${slots.art.y}%`,
+              width: `${slots.art.w}%`,
+              height: `${slots.art.h}%`,
+              overflow: "visible",
+              zIndex: 5,
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transform: `translate(${char.offsetX || 0}px, ${char.offsetY || 0}px) scale(${char.zoom || 1})`,
+                transition: "transform 75ms",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={char.imageUrl}
+                alt={card.name || "Personaje sobresaliendo"}
+                style={{
+                  ...(char.fitMode === "cover"
+                    ? { width: "100%", height: "100%", objectFit: "cover" }
+                    : char.fitMode === "fill"
+                    ? { width: "100%", height: "100%", objectFit: "fill" }
+                    : {
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        width: "auto",
+                        height: "auto",
+                        objectFit: "contain",
+                      }),
+                }}
+                crossOrigin="anonymous"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── 2. MARCO VECTORIAL SVG DINÁMICO (zIndex: 2) ───────────── */}
         <div
           style={{
             position: "absolute",
@@ -132,12 +230,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             pointerEvents: "none",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={frameSrc}
-            alt={`${card.type} frame`}
-            style={{ width: "100%", height: "100%", objectFit: "fill" }}
-            crossOrigin="anonymous"
+          <CardFrameSvg
+            cardType={card.type}
+            frameColor={card.frameColor || "blue"}
           />
         </div>
 
@@ -170,7 +265,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
                 singleLine
                 minFontSize={28}
                 maxFontSize={66}
-                className="font-[family-name:var(--font-cinzel)] font-black text-center text-[#f7eedc] drop-shadow-[0_2px_5px_rgba(0,0,0,0.95)]"
+                className="font-[family-name:var(--font-cinzel)] font-black text-center text-[#f7eedc] leading-none drop-shadow-[0_2px_5px_rgba(0,0,0,0.95)]"
               />
             </div>
           )}
@@ -187,8 +282,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              paddingLeft: "3%",
-              paddingRight: "3%",
+              paddingLeft: "2%",
+              paddingRight: "2%",
             }}
           >
             <AutoFitText
@@ -196,11 +291,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
               singleLine
               minFontSize={16}
               maxFontSize={42}
-              className="font-[family-name:var(--font-cinzel)] font-bold tracking-wider text-[#f5ebd7] text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"
+              className="font-[family-name:var(--font-cinzel)] font-bold tracking-wider text-[#f5ebd7] text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] translate-y-[2px]"
             />
           </div>
 
-          {/* C) CUADRO DE EFECTOS (y ATK/DEF) */}
+          {/* C) CUADRO DE EFECTOS */}
           <div
             data-slot="effect"
             style={{
@@ -209,99 +304,56 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
               top: `${slots.effect.y}%`,
               width: `${slots.effect.w}%`,
               height: `${slots.effect.h}%`,
-              padding: "2% 3%",
+              padding: "16px 22px",
               overflow: "hidden",
             }}
           >
-            {isMonster ? (
-              /* En MONSTER: CSS Grid de 2 filas para que el texto y el badge nunca choquen */
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateRows: "1fr auto",
-                  width: "100%",
-                  height: "100%",
-                  minHeight: 0,
-                  overflow: "hidden",
-                  gap: "0.8%",
-                }}
-              >
-                {/* Fila 1: Texto del efecto (responsive, autofit garantizado) */}
-                <div
-                  style={{
-                    minHeight: 0,
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-start",
-                    paddingBottom: "2px",
-                  }}
-                >
-                  <AutoFitText
-                    text={card.effect || "Escribe el efecto de la carta aquí..."}
-                    minFontSize={11}
-                    maxFontSize={30}
-                    className="font-[family-name:var(--font-lora)] text-[#f0e6cf] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                  />
-                </div>
-
-                {/* Fila 2: Franja de stats ATK/DEF en la esquina inferior derecha */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <div
-                    className="grid grid-cols-2 items-center bg-[#0c1017]/95 border-2 border-amber-500/80 rounded-md px-3.5 py-1 shadow-lg shadow-black/80"
-                    style={{ minWidth: "210px", height: "42px" }}
-                  >
-                    {/* ATK */}
-                    <div className="flex items-center justify-center gap-1.5 pr-2.5">
-                      <span className="font-[family-name:var(--font-cinzel)] text-[12px] font-bold text-amber-400/90 tracking-widest">
-                        ATK
-                      </span>
-                      <span className="font-[family-name:var(--font-cinzel)] text-[22px] font-black text-[#f5ebd7] leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                        {card.atk || "0"}
-                      </span>
-                    </div>
-
-                    {/* DEF */}
-                    <div className="flex items-center justify-center gap-1.5 pl-2.5 border-l border-amber-500/50">
-                      <span className="font-[family-name:var(--font-cinzel)] text-[12px] font-bold text-cyan-400/90 tracking-widest">
-                        DEF
-                      </span>
-                      <span className="font-[family-name:var(--font-cinzel)] text-[22px] font-black text-[#f5ebd7] leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                        {card.def || "0"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* En GENERAL y ARCANO: Todo el cuadro reservado para el efecto */
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  minHeight: 0,
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                }}
-              >
-                <AutoFitText
-                  text={card.effect || "Escribe el efecto de la carta aquí..."}
-                  minFontSize={12}
-                  maxFontSize={34}
-                  className="font-[family-name:var(--font-lora)] text-[#f0e6cf] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                />
-              </div>
-            )}
+            <AutoFitText
+              text={card.effect || "Escribe el efecto de la carta aquí..."}
+              enableRichText
+              minFontSize={11}
+              maxFontSize={32}
+              bottomRightCutout={isMonster ? { width: 265, height: 62 } : undefined}
+              className="font-[family-name:var(--font-lora)] text-[#f0e6cf] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+            />
           </div>
+
+          {/* D) FRANJA ATK / DEF (Solo Monstruo - ubicado sobre el badge del marco) */}
+          {isMonster && slots.atkdef && (
+            <div
+              data-slot="atkdef"
+              style={{
+                position: "absolute",
+                left: `${slots.atkdef.x}%`,
+                top: `${slots.atkdef.y}%`,
+                width: `${slots.atkdef.w}%`,
+                height: `${slots.atkdef.h}%`,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                alignItems: "center",
+              }}
+            >
+              {/* ATK */}
+              <div className="flex items-center justify-end pr-3 gap-2">
+                <span className="font-[family-name:var(--font-cinzel)] text-[22px] font-bold text-amber-300 tracking-wider">
+                  ATK
+                </span>
+                <span className="font-[family-name:var(--font-cinzel)] text-[22px] font-black text-[#fff5db] leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                  {card.atk || "0"}
+                </span>
+              </div>
+
+              {/* DEF */}
+              <div className="flex items-center justify-start pl-3 gap-2">
+                <span className="font-[family-name:var(--font-cinzel)] text-[22px] font-bold text-cyan-300 tracking-wider">
+                  DEF
+                </span>
+                <span className="font-[family-name:var(--font-cinzel)] text-[22px] font-black text-[#fff5db] leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                  {card.def || "0"}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── 4. MODO CALIBRACIÓN (Visualización interactiva de slots) ── */}

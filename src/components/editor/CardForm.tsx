@@ -24,13 +24,13 @@ export const CardForm: React.FC = () => {
     },
     {
       type: "general",
-      label: "General",
+      label: "Evento",
       icon: <Shield className="w-4 h-4 text-cyan-400" />,
       desc: "Nombre, Coste y Efecto",
     },
     {
       type: "arcano",
-      label: "Arcano",
+      label: "Lider",
       icon: <Sparkles className="w-4 h-4 text-purple-400" />,
       desc: "Nombre y Efecto (sin coste ni ATK/DEF)",
     },
@@ -221,6 +221,10 @@ export const CardForm: React.FC = () => {
             placeholder="Escribe el efecto de la carta aquí..."
             className="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg p-3 text-sm text-[#f0e6cf] font-[family-name:var(--font-lora)] focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all placeholder:text-zinc-600 resize-y"
           />
+          <p className="text-[11px] text-zinc-500 mt-1">
+            Formato: <code className="px-1 py-0.5 bg-zinc-800 rounded text-amber-400/80">*negrita*</code>{" "}
+            <code className="px-1 py-0.5 bg-zinc-800 rounded text-purple-400/80">_cursiva_</code>
+          </p>
         </div>
       </div>
 

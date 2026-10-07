@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { CardData, CardFrameColor, CardType } from "@/lib/schema";
+import { CardData, CardFrameColor, CardType, ImageLayer } from "@/lib/schema";
 import {
   saveCurrentCard,
   loadCurrentCard,
@@ -20,14 +20,25 @@ const DEFAULT_CARD: CardData = {
   def: "6",
   effect:
     "Cuando esta criatura entra en juego, destruye todas las cartas en juego con un coste de 3 o menor.\n\nUna vez por turno, puedes descartar 1 carta para anular un efecto enemigo.",
-  art: {
+  background: {
     zoom: 1,
     offsetX: 0,
     offsetY: 0,
+    fitMode: "contain",
+    clipToFrame: true,
+  },
+  character: {
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    fitMode: "contain",
+    clipToFrame: true,
   },
   createdAt: Date.now(),
   updatedAt: Date.now(),
 };
+
+export type ArtLayerType = "background" | "character";
 
 interface CardStoreState {
   card: CardData;
@@ -36,13 +47,20 @@ interface CardStoreState {
   calibration: boolean;
   previewScale: number;
 
-  // Acciones
+  // Acciones de capas de imagen
+  updateLayer: (layer: ArtLayerType, updates: Partial<ImageLayer>) => void;
+  setLayerFile: (layer: ArtLayerType, file: File) => Promise<void>;
+  clearLayer: (layer: ArtLayerType) => Promise<void>;
+
+  // Compatibilidad hacia atrás
+  updateArt: (updates: Partial<ImageLayer>) => void;
+  setArtFile: (file: File) => Promise<void>;
+  clearArt: () => Promise<void>;
+
+  // Acciones generales
   setCardType: (type: CardType) => void;
   setFrameColor: (color: CardFrameColor) => void;
   updateField: <K extends keyof CardData>(field: K, value: CardData[K]) => void;
-  updateArt: (updates: Partial<CardData["art"]>) => void;
-  setArtFile: (file: File) => Promise<void>;
-  clearArt: () => Promise<void>;
   setCalibration: (enabled: boolean) => void;
   setPreviewScale: (scale: number) => void;
   importCardData: (data: CardData) => void;
@@ -110,12 +128,12 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
     });
   },
 
-  updateArt: (updates) => {
+  updateLayer: (layer, updates) => {
     set((state) => {
       const nextCard: CardData = {
         ...state.card,
-        art: {
-          ...state.card.art,
+        [layer]: {
+          ...state.card[layer],
           ...updates,
         },
         updatedAt: Date.now(),
@@ -125,26 +143,28 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
     });
   },
 
-  setArtFile: async (file: File) => {
-    const prevImageId = get().card.art.imageId;
+  setLayerFile: async (layer, file) => {
+    const prevImageId = get().card[layer]?.imageId;
     if (prevImageId) {
       await deleteImageBlob(prevImageId).catch(() => {});
     }
 
-    const imageId = `art_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const imageId = `${layer}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     await saveImageBlob(imageId, file);
     const objectUrl = URL.createObjectURL(file);
 
     set((state) => {
       const nextCard: CardData = {
         ...state.card,
-        art: {
-          ...state.card.art,
+        [layer]: {
+          ...state.card[layer],
           imageId,
           imageUrl: objectUrl,
           zoom: 1,
           offsetX: 0,
           offsetY: 0,
+          fitMode: state.card[layer]?.fitMode || "contain",
+          clipToFrame: state.card[layer]?.clipToFrame ?? true,
         },
         updatedAt: Date.now(),
       };
@@ -153,8 +173,8 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
     });
   },
 
-  clearArt: async () => {
-    const currentImageId = get().card.art.imageId;
+  clearLayer: async (layer) => {
+    const currentImageId = get().card[layer]?.imageId;
     if (currentImageId) {
       await deleteImageBlob(currentImageId).catch(() => {});
     }
@@ -162,10 +182,12 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
     set((state) => {
       const nextCard: CardData = {
         ...state.card,
-        art: {
+        [layer]: {
           zoom: 1,
           offsetX: 0,
           offsetY: 0,
+          fitMode: "contain",
+          clipToFrame: true,
         },
         updatedAt: Date.now(),
       };
@@ -173,6 +195,11 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
       return { card: nextCard };
     });
   },
+
+  // Métodos legados delegados a 'character'
+  updateArt: (updates) => get().updateLayer("character", updates),
+  setArtFile: async (file) => get().setLayerFile("character", file),
+  clearArt: async () => get().clearLayer("character"),
 
   setCalibration: (enabled) => set({ calibration: enabled }),
 
@@ -198,10 +225,19 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
       atk: type === "monster" ? "5" : undefined,
       def: type === "monster" ? "5" : undefined,
       effect: "Descripción del efecto...",
-      art: {
+      background: {
         zoom: 1,
         offsetX: 0,
         offsetY: 0,
+        fitMode: "contain",
+        clipToFrame: true,
+      },
+      character: {
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        fitMode: "contain",
+        clipToFrame: true,
       },
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -248,10 +284,20 @@ export const useCardStore = create<CardStoreState>((set, get) => ({
     if (!found) return;
 
     const cardToLoad: CardData = { ...found };
-    if (cardToLoad.art.imageId) {
-      const blob = await getImageBlob(cardToLoad.art.imageId);
+
+    // Restaurar Blob de fondo
+    if (cardToLoad.background?.imageId) {
+      const blob = await getImageBlob(cardToLoad.background.imageId);
       if (blob) {
-        cardToLoad.art.imageUrl = URL.createObjectURL(blob);
+        cardToLoad.background.imageUrl = URL.createObjectURL(blob);
+      }
+    }
+
+    // Restaurar Blob de personaje
+    if (cardToLoad.character?.imageId) {
+      const blob = await getImageBlob(cardToLoad.character.imageId);
+      if (blob) {
+        cardToLoad.character.imageUrl = URL.createObjectURL(blob);
       }
     }
 

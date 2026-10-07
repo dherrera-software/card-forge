@@ -9,15 +9,15 @@ export interface ColorOption {
 }
 
 export const CARD_FRAME_COLORS: ColorOption[] = [
-  { id: "blue",   label: "Azul",     badgeHex: "#1e3a8a", borderHex: "#3b82f6", desc: "Zafiro Celestial" },
-  { id: "red",    label: "Rojo",     badgeHex: "#7f1d1d", borderHex: "#ef4444", desc: "Rubí Carmesí" },
-  { id: "yellow", label: "Amarillo", badgeHex: "#78350f", borderHex: "#eab308", desc: "Ámbar Solar" },
-  { id: "orange", label: "Naranja",  badgeHex: "#7c2d12", borderHex: "#f97316", desc: "Fuego & Brasa" },
-  { id: "green",  label: "Verde",    badgeHex: "#14532d", borderHex: "#22c55e", desc: "Esmeralda Mística" },
-  { id: "cyan",   label: "Celeste",  badgeHex: "#164e63", borderHex: "#06b6d4", desc: "Éter Astral" },
-  { id: "black",  label: "Negro",    badgeHex: "#09090b", borderHex: "#52525b", desc: "Obsidiana Abisal" },
-  { id: "white",  label: "Blanco",   badgeHex: "#e4e4e7", borderHex: "#ffffff", desc: "Alabastro Sagrado" },
-  { id: "gray",   label: "Gris",     badgeHex: "#27272a", borderHex: "#a1a1aa", desc: "Tokens & Neutral" },
+  { id: "red",    label: "Rojo",     badgeHex: "#eb4c2d", borderHex: "#ff7456", desc: "Fuego" },
+  { id: "blue",   label: "Azul",     badgeHex: "#005ea7", borderHex: "#228be6", desc: "Agua" },
+  { id: "green",  label: "Verde",    badgeHex: "#38ac30", borderHex: "#51cf66", desc: "Viento" },
+  { id: "orange", label: "Naranja",  badgeHex: "#d58515", borderHex: "#ff922b", desc: "Tierra" },
+  { id: "yellow", label: "Amarillo", badgeHex: "#fee600", borderHex: "#fff3bf", desc: "Electricidad" },
+  { id: "cyan",   label: "Celeste",  badgeHex: "#22a2db", borderHex: "#66d9e8", desc: "Hielo" },
+  { id: "black",  label: "Negro",    badgeHex: "#07363a", borderHex: "#20c997", desc: "Oscuridad" },
+  { id: "white",  label: "Blanco",   badgeHex: "#e6e5e1", borderHex: "#ffffff", desc: "Luz" },
+  { id: "gray",   label: "Gris",     badgeHex: "#828780", borderHex: "#ced4da", desc: "Token" },
 ];
 
 export function getFrameSrc(color: CardFrameColor = "blue"): string {
@@ -27,32 +27,32 @@ export function getFrameSrc(color: CardFrameColor = "blue"): string {
 export const CARD_TEMPLATES: Record<CardType, CardTemplate> = {
   monster: {
     type: "monster",
-    frameSrc: "/frames/frame_blue.png",
+    frameSrc: "/frames/frame_monster_gray.svg",
     slots: {
-      cost:   { x: 3.4,  y: 2.2,  w: 13.0, h: 8.6  },
-      name:   { x: 19.8, y: 3.2,  w: 66.8, h: 6.2  },
-      art:    { x: 9.6,  y: 12.2, w: 80.8, h: 60.8 },
-      effect: { x: 5.6,  y: 75.8, w: 88.8, h: 19.0 },
-      atkdef: { x: 67.0, y: 89.4, w: 26.5, h: 4.8  },
+      cost:   { x: 4.79, y: 3.45, w: 12.3, h: 8.2 },
+      name:   { x: 19.34, y: 4.45, w: 68.0, h: 5.25 },
+      art:    { x: 9.6,  y: 13.3, w: 80.8, h: 59.1 },
+      effect: { x: 6.5,  y: 76.0, w: 87.0, h: 18.5 },
+      atkdef: { x: 67.38, y: 91.4, w: 24.6, h: 3.39 },
     },
   },
   general: {
     type: "general",
-    frameSrc: "/frames/frame_blue.png",
+    frameSrc: "/frames/frame_general_gray.svg",
     slots: {
-      cost:   { x: 3.4,  y: 2.2,  w: 13.0, h: 8.6  },
-      name:   { x: 19.8, y: 3.2,  w: 66.8, h: 6.2  },
-      art:    { x: 9.6,  y: 12.2, w: 80.8, h: 60.8 },
-      effect: { x: 5.6,  y: 75.8, w: 88.8, h: 19.0 },
+      cost:   { x: 4.79, y: 3.45, w: 12.3, h: 8.2 },
+      name:   { x: 19.34, y: 4.45, w: 68.0, h: 5.25 },
+      art:    { x: 9.6,  y: 13.3, w: 80.8, h: 59.1 },
+      effect: { x: 6.5,  y: 76.0, w: 87.0, h: 18.5 },
     },
   },
   arcano: {
     type: "arcano",
-    frameSrc: "/frames/frame_blue.png",
+    frameSrc: "/frames/frame_arcano_gray.svg",
     slots: {
-      name:   { x: 19.8, y: 3.2,  w: 66.8, h: 6.2  },
-      art:    { x: 9.6,  y: 12.2, w: 80.8, h: 60.8 },
-      effect: { x: 5.6,  y: 75.8, w: 88.8, h: 19.0 },
+      name:   { x: 8.79, y: 4.45, w: 82.42, h: 5.25 },
+      art:    { x: 9.6,  y: 13.3, w: 80.8, h: 59.1 },
+      effect: { x: 6.5,  y: 76.0, w: 87.0, h: 18.5 },
     },
   },
 };

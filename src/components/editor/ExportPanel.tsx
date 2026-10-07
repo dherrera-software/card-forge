@@ -106,8 +106,8 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ getExportNode }) => {
       {/* Selector de formato de imagen */}
       <div className="space-y-2">
         <label className="text-xs text-zinc-400 block">Formato de descarga</label>
-        <div className="grid grid-cols-3 gap-2">
-          {(["png", "jpg", "webp"] as ImageFormat[]).map((fmt) => (
+        <div className="grid grid-cols-2 gap-2">
+          {(["png", "jpg"] as ImageFormat[]).map((fmt) => (
             <button
               key={fmt}
               type="button"

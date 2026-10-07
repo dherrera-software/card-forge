@@ -1,7 +1,7 @@
-import { toPng, toJpeg, toCanvas } from "html-to-image";
+import { toPng, toJpeg } from "html-to-image";
 import { CardData, CardDataSchema } from "./schema";
 
-export type ImageFormat = "png" | "jpg" | "webp";
+export type ImageFormat = "png" | "jpg";
 
 /**
  * Sanea el nombre de la carta para usarlo como nombre de archivo
@@ -40,7 +40,64 @@ async function waitForAssets(node: HTMLElement): Promise<void> {
 }
 
 /**
- * Exporta un nodo HTML de carta a imagen (PNG, JPG o WEBP) y dispara la descarga
+ * Convierte una URL blob: a una data: URL embebida (base64).
+ * Las blob: URLs son efímeras y no se pueden re-obtener desde un nodo clonado,
+ * lo que causa "Failed to fetch" en html-to-image.
+ */
+function blobUrlToDataUrl(blobUrl: string): Promise<string> {
+  return fetch(blobUrl)
+    .then((res) => res.blob())
+    .then(
+      (blob) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        })
+    );
+}
+
+/**
+ * Antes de exportar, convierte todas las <img> con src blob: a data: URL.
+ * Devuelve una función de limpieza que restaura las URLs originales.
+ */
+async function prepareBlobImages(
+  node: HTMLElement
+): Promise<() => void> {
+  const images = Array.from(node.querySelectorAll("img"));
+  const originals: { img: HTMLImageElement; src: string }[] = [];
+
+  for (const img of images) {
+    if (img.src.startsWith("blob:")) {
+      originals.push({ img, src: img.src });
+      try {
+        const dataUrl = await blobUrlToDataUrl(img.src);
+        img.src = dataUrl;
+        // Esperar a que la imagen con la nueva src termine de cargar
+        await new Promise<void>((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          }
+        });
+      } catch {
+        // Si falla la conversión, dejar la URL original
+      }
+    }
+  }
+
+  return () => {
+    for (const { img, src } of originals) {
+      img.src = src;
+    }
+  };
+}
+
+/**
+ * Exporta un nodo HTML de carta a imagen (PNG o JPG) y dispara la descarga
  */
 export async function exportCardAsImage(
   node: HTMLElement,
@@ -49,37 +106,43 @@ export async function exportCardAsImage(
 ): Promise<void> {
   await waitForAssets(node);
 
-  const baseFilename = sanitizeFilename(cardName);
-  let dataUrl: string;
+  // Convertir blob: URLs a data: URLs para evitar "Failed to fetch"
+  const restoreBlobs = await prepareBlobImages(node);
 
-  const exportOptions = {
-    width: 1024,
-    height: 1536,
-    pixelRatio: 1,
-    cacheBust: true,
-  };
+  try {
+    const baseFilename = sanitizeFilename(cardName);
+    let dataUrl: string;
 
-  if (format === "png") {
-    dataUrl = await toPng(node, exportOptions);
-  } else if (format === "jpg") {
-    dataUrl = await toJpeg(node, {
-      ...exportOptions,
-      quality: 0.95,
-      backgroundColor: "#0c1017", // Fondo opaco para JPG
-    });
-  } else {
-    // webp
-    const canvas = await toCanvas(node, exportOptions);
-    dataUrl = canvas.toDataURL("image/webp", 0.95);
+    const exportOptions = {
+      width: 1024,
+      height: 1536,
+      pixelRatio: 1,
+      cacheBust: false,    // No añadir timestamps a URLs (causa fallos de fetch)
+      skipFonts: true,     // next/font ya inyecta las fuentes en el documento
+    };
+
+    if (format === "png") {
+      dataUrl = await toPng(node, exportOptions);
+    } else {
+      // jpg
+      dataUrl = await toJpeg(node, {
+        ...exportOptions,
+        quality: 0.95,
+        backgroundColor: "#0c1017", // Fondo opaco para JPG
+      });
+    }
+
+    // Descarga del archivo
+    const link = document.createElement("a");
+    link.download = `${baseFilename}.${format}`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } finally {
+    // Restaurar blob: URLs originales para no inflar la memoria del DOM
+    restoreBlobs();
   }
-
-  // Descarga del archivo
-  const link = document.createElement("a");
-  link.download = `${baseFilename}.${format}`;
-  link.href = dataUrl;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
 /**
@@ -88,9 +151,13 @@ export async function exportCardAsImage(
 export function exportCardAsJson(card: CardData): void {
   const sanitizedCard: CardData = {
     ...card,
-    art: {
-      ...card.art,
+    background: {
+      ...card.background,
       imageUrl: undefined, // No exportar URLs blob efímeras
+    },
+    character: {
+      ...card.character,
+      imageUrl: undefined,
     },
   };
 
